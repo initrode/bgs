@@ -1,0 +1,94 @@
+name: CI/CD
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main]
+
+# A newer push cancels an in-flight run for the same branch, so deploys
+# always ship the latest commit rather than queueing every intermediate one.
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  verify:
+    name: Lint, test & security checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # gitleaks needs history, not just the tip commit
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      # npm ci refuses to run if package.json and npm-shrinkwrap.json have
+      # drifted apart, so this step alone is a deterministic lockfile check.
+      - name: Install (from shrinkwrap, exact versions only)
+        run: npm ci
+
+      - name: Lockfile integrity (hosts, resolved URLs, https)
+        run: npm run lockfile:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Dependency vulnerability audit (high/critical)
+        run: npm run audit
+
+      - name: Verify npm registry signatures & attestations
+        run: npm audit signatures
+
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy:
+    name: Deploy to EC2
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "${{ secrets.DEPLOY_PORT || 22 }}" -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Ship the app (excludes node_modules, data, git metadata)
+        run: |
+          rsync -az --delete \
+            -e "ssh -p ${{ secrets.DEPLOY_PORT || 22 }} -i ~/.ssh/deploy_key" \
+            --exclude '.git/' --exclude 'node_modules/' --exclude 'data/' \
+            ./ "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/"
+
+      - name: Install production deps & restart the service
+        run: |
+          ssh -p "${{ secrets.DEPLOY_PORT || 22 }}" -i ~/.ssh/deploy_key \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" '
+              set -e
+              cd "${{ secrets.DEPLOY_PATH }}"
+              npm ci --omit=dev
+              npx playwright install --with-deps chromium
+              sudo systemctl restart homework-board
+              sleep 2
+              curl -fsS http://localhost:4000/api/health > /dev/null
+            '

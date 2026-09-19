@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Homework Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="wrap">
+    <header class="page-head">
+      <div>
+        <h1 id="heading">Homework</h1>
+        <p class="lede" id="lede">Loading from every connected school system…</p>
+      </div>
+      <button id="refresh" class="btn" type="button" title="Re-fetch from every source">
+        <span class="btn-dot"></span><span id="refresh-label">Refresh</span>
+      </button>
+    </header>
+
+    <nav class="tabs" id="tabs" aria-label="Sections">
+      <a class="tab is-on" id="tab-homework" data-tab="homework" href="/" aria-current="page">Homework</a>
+      <a class="tab" id="tab-timetable" data-tab="timetable" href="/timetable">Timetable</a>
+      <a class="tab" id="tab-termdates" data-tab="termdates" href="/termdates">Term dates</a>
+    </nav>
+
+    <section id="panel-homework" aria-labelledby="tab-homework">
+      <div class="stats" id="stats" hidden>
+        <div class="stat"><span class="stat-n" id="n-overdue">0</span><span class="stat-l">Overdue</span></div>
+        <div class="stat"><span class="stat-n" id="n-soon">0</span><span class="stat-l">Due in 3 days</span></div>
+        <div class="stat"><span class="stat-n" id="n-open">0</span><span class="stat-l">Still to do</span></div>
+        <div class="stat"><span class="stat-n" id="n-done">0</span><span class="stat-l">Done</span></div>
+      </div>
+
+      <section class="practice" id="practice" hidden aria-label="Practice targets"></section>
+
+      <nav class="filters" id="filters" hidden>
+        <div class="chips" role="tablist" aria-label="Filter tasks">
+          <button class="chip is-on" data-filter="todo" role="tab" type="button">To do</button>
+          <button class="chip" data-filter="all" role="tab" type="button">All</button>
+          <button class="chip" data-filter="overdue" role="tab" type="button">Overdue</button>
+          <button class="chip" data-filter="done" role="tab" type="button">Done</button>
+        </div>
+      </nav>
+
+      <main id="board" class="board">
+        <div class="skeleton" aria-hidden="true"></div>
+        <div class="skeleton" aria-hidden="true"></div>
+      </main>
+    </section>
+
+    <section id="panel-timetable" aria-labelledby="tab-timetable" hidden>
+      <nav class="weeknav">
+        <button class="weekstep" id="week-prev" type="button" aria-label="Previous week">&larr;</button>
+        <div class="weeklabel">
+          <span id="week-label">Loading…</span>
+          <button class="weekthis" id="week-this" type="button">This week</button>
+        </div>
+        <button class="weekstep" id="week-next" type="button" aria-label="Next week">&rarr;</button>
+      </nav>
+      <div id="timetable" class="timetable">
+        <div class="skeleton" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <section id="panel-termdates" aria-labelledby="tab-termdates" hidden>
+      <div id="closures"></div>
+    </section>
+
+    <footer class="page-foot" id="foot"></footer>
+  </div>
+
+  <div id="hw-panel" class="hw-panel" role="dialog" aria-label="Homework due in this lesson" hidden></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

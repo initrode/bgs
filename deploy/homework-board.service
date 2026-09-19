@@ -1,0 +1,17 @@
+[Unit]
+Description=Homework board
+After=network.target
+
+[Service]
+Type=simple
+User=homework
+WorkingDirectory=/opt/homework-board
+ExecStart=/usr/bin/node server.mjs
+Restart=on-failure
+RestartSec=5
+Environment=NODE_ENV=production
+# Credentials aren't read from here — server.mjs loads ~/.satchel.env (this
+# user's home) or <app dir>/.satchel.env itself; see src/config.mjs.
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,119 @@
+{
+  "school": "Bury Grammar School",
+  "year": "2026-27",
+  "source": {
+    "page": "https://www.burygrammar.com/about-us/term-dates",
+    "file": "https://www.burygrammar.com/fs/resource-manager/view/4a2b1fbf-26e4-44d0-b318-3e94734551dd",
+    "transcribedOn": "2026-09-19",
+    "note": "Typed out by hand from the school's term dates sheet, which is published only as a flattened image PDF - no text layer, no calendar feed, nothing to parse. Edit this file when the school issues a new one."
+  },
+  "terms": [
+    {
+      "name": "Autumn 2026",
+      "start": "2026-09-04",
+      "end": "2026-12-18"
+    },
+    {
+      "name": "Spring 2027",
+      "start": "2027-01-04",
+      "end": "2027-03-25"
+    },
+    {
+      "name": "Summer 2027",
+      "start": "2027-04-12",
+      "end": "2027-07-02"
+    }
+  ],
+  "closures": [
+
+    {
+      "start": "2026-09-25",
+      "end": "2026-09-25",
+      "kind": "staff-day",
+      "label": "Teaching staff and pupils not in school"
+    },
+    {
+      "start": "2026-10-19",
+      "end": "2026-10-30",
+      "kind": "holiday",
+      "label": "October half term",
+      "note": "Half term begins Friday 16th October, end of day"
+    },
+    {
+      "start": "2026-12-21",
+      "end": "2027-01-01",
+      "kind": "holiday",
+      "label": "Christmas holidays",
+      "note": "Term ends Friday 18th December at midday"
+    },
+    {
+      "start": "2027-01-21",
+      "end": "2027-01-21",
+      "kind": "staff-day",
+      "label": "Entrance exam day",
+      "note": "No BGS pupils in school"
+    },
+    {
+      "start": "2027-02-12",
+      "end": "2027-02-19",
+      "kind": "holiday",
+      "label": "February half term",
+      "note": "Half term begins Thursday 11th February, end of day"
+    },
+    {
+      "start": "2027-03-26",
+      "end": "2027-04-09",
+      "kind": "holiday",
+      "label": "Easter holidays",
+      "note": "Term ends Thursday 25th March at midday"
+    },
+    {
+      "start": "2027-05-03",
+      "end": "2027-05-03",
+      "kind": "bank-holiday",
+      "label": "Bank holiday"
+    },
+    {
+      "start": "2027-05-31",
+      "end": "2027-06-04",
+      "kind": "holiday",
+      "label": "May half term",
+      "note": "Half term begins Friday 28th May, end of day"
+    },
+    {
+      "start": "2027-06-07",
+      "end": "2027-06-07",
+      "kind": "staff-day",
+      "label": "Staff day",
+      "note": "Staff and examination candidates only in school"
+    },
+    {
+      "start": "2027-07-03",
+      "end": "2027-08-31",
+      "kind": "holiday",
+      "label": "Summer holidays",
+      "note": "Term ends Friday 2nd July at midday"
+    }
+  ],
+  "halfDays": [
+    {
+      "date": "2026-12-18",
+      "label": "Autumn term ends at midday"
+    },
+    {
+      "date": "2027-03-25",
+      "label": "Spring term ends at midday"
+    },
+    {
+      "date": "2027-07-02",
+      "label": "Summer term ends at midday"
+    }
+  ],
+  "events": [
+    {
+      "date": "2027-04-30",
+      "label": "Founders' Day",
+      "note": "Listed on the term dates sheet as a school event, not as a closure"
+    }
+  ]
+}
