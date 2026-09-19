@@ -399,9 +399,9 @@ test('my provider normalises a notice', async (t) => {
 `stubFetch` (a routing table plus a record of what was called), `serve`
 (an app on an ephemeral port) and `fakeProvider`.
 
-## CI/CD
+## CI
 
-Every push and pull request runs `.github/workflows/ci-cd.yml`:
+Every push and pull request runs `.github/workflows/ci.yml`:
 
 | Stage | What | Command |
 |---|---|---|
@@ -430,48 +430,6 @@ Regenerate after adding or upgrading a package:
 npm install <pkg>@<version>
 npm shrinkwrap
 ```
-
-### Deploying
-
-On a push to `main` that passes `verify`, the `deploy` job ships the app to an
-EC2 box over SSH: `rsync` the tree (minus `.git`, `node_modules`, `data/`),
-then over SSH `npm ci --omit=dev`, `playwright install --with-deps chromium`,
-and `systemctl restart homework-board`, finishing with a `/api/health` check.
-
-This app is a long-running Node process with local disk state (cookies, the
-response cache, your ticks, downloaded attachments) and a real Playwright
-browser for signing in — a persistent box suits it far better than a
-serverless platform, which offers neither a writable disk between requests nor
-room for a bundled Chromium.
-
-**One-time setup**, on a fresh Ubuntu EC2 instance (a free-tier t3.micro or
-t4g.small is enough):
-
-```bash
-scp deploy/setup-ec2.sh ubuntu@<host>:~
-ssh ubuntu@<host> './setup-ec2.sh'
-# then put real credentials in /opt/homework-board/.satchel.env (chmod 600)
-```
-
-That installs Node, Chromium's system libraries, clones the repo, and installs
-`deploy/homework-board.service` as a systemd unit running under a dedicated
-`homework` user, with passwordless `sudo systemctl restart` scoped to that one
-unit for CI to call.
-
-Then add these repository secrets (Settings → Secrets and variables → Actions)
-so the `deploy` job can reach it:
-
-| Secret | Value |
-|---|---|
-| `DEPLOY_HOST` | the instance's public IP or hostname |
-| `DEPLOY_USER` | `homework` |
-| `DEPLOY_PATH` | `/opt/homework-board` |
-| `DEPLOY_SSH_KEY` | private key whose public half is in that user's `~/.ssh/authorized_keys` |
-| `DEPLOY_PORT` | optional, defaults to `22` |
-
-The `deploy` job also needs a `production` environment on the repo (Settings →
-Environments) — add one with no protection rules if you don't want manual
-approval on every deploy, or add a required reviewer if you do.
 
 ## Data
 
