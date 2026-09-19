@@ -7,7 +7,9 @@
     "node": ">=22.0.0"
   },
   "scripts": {
+    "prestart": "npm run verify",
     "start": "node server.mjs",
+    "verify": "npm run lockfile:check && npm run lint && npm test && npm run audit && npm audit signatures",
     "test": "node --test test/",
     "test:watch": "node --test --watch test/",
     "lint": "eslint .",
