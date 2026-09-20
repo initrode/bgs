@@ -2,7 +2,7 @@
   --paper:#F6F7FA; --surface:#FFFFFF; --sunk:#F0F2F7;
   --ink:#1A2130; --ink-soft:#5D6779; --ink-faint:#8A93A6;
   --line:#DFE3EC; --line-soft:#EAEDF4;
-  --urgent:#e22d20; --warn:#8f3a12; --done:#2C6E52;
+  --urgent:#e22d20; --warn:#8f3a12; --done:#2C6E52; --info:#1D6FBF;
   --subject-s:42%; --subject-l:38%;
   --shadow:0 1px 2px rgba(26,33,48,.05), 0 8px 24px -18px rgba(26,33,48,.3);
   --display:"Helvetica Neue", Inter, Helvetica, Arial, sans-serif;
@@ -13,7 +13,7 @@
     --paper:#11151D; --surface:#181D27; --sunk:#1F2530;
     --ink:#E4E9F2; --ink-soft:#9BA5BA; --ink-faint:#7A8499;
     --line:#2B323F; --line-soft:#232935;
-    --urgent:#E88178; --warn:#DCAA5C; --done:#74C39A;
+    --urgent:#E88178; --warn:#DCAA5C; --done:#74C39A; --info:#7FB2E8;
     --subject-s:52%; --subject-l:68%;
     --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -18px rgba(0,0,0,.85);
   }
@@ -22,7 +22,7 @@
   --paper:#11151D; --surface:#181D27; --sunk:#1F2530;
   --ink:#E4E9F2; --ink-soft:#9BA5BA; --ink-faint:#7A8499;
   --line:#2B323F; --line-soft:#232935;
-  --urgent:#E88178; --warn:#DCAA5C; --done:#74C39A;
+  --urgent:#E88178; --warn:#DCAA5C; --done:#74C39A; --info:#7FB2E8;
   --subject-s:52%; --subject-l:68%;
   --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -18px rgba(0,0,0,.85);
 }
@@ -340,6 +340,16 @@ h1 { font-family: var(--display); font-weight: 700; font-size: clamp(31px, 5.6vw
   font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
   color: var(--warn); background: color-mix(in srgb, var(--warn) 18%, var(--surface));
   border: 1px solid color-mix(in srgb, var(--warn) 45%, var(--line));
+  border-radius: 20px; padding: 3px 9px; white-space: nowrap; width: fit-content;
+}
+
+/* A swimming lesson today — its own call-out, so it's never mistaken for PE kit. */
+.day.is-swim .day-head { background: color-mix(in srgb, var(--info) 16%, var(--surface)); }
+.swim-badge {
+  display: inline-flex; align-items: center; gap: 4px; order: 1; flex: 1 1 100%;
+  font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--info); background: color-mix(in srgb, var(--info) 18%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--info) 45%, var(--line));
   border-radius: 20px; padding: 3px 9px; white-space: nowrap; width: fit-content;
 }
 

@@ -6,6 +6,7 @@ import {
   dockOpacity, attachHomework, schoolWeekOf, viewForPath, pathForView,
   progressPct, targetLabel, remainingLabel, periodLabel, toneHue,
   markClosures, closureDates, closureWhen, nextClosure, breakBefore, schoolDaysUntil, markPeKit,
+  markSwimKit,
 } from './task-utils.js';
 
 const $ = (sel) => document.querySelector(sel);
@@ -316,13 +317,14 @@ function renderTimetable() {
 
   const today = todayISO();
   restingDay = focusDayIndex(timetable.days);
-  const days = markPeKit(markClosures(attachHomework(timetable.days, tasks), closures));
+  const days = markSwimKit(markPeKit(markClosures(attachHomework(timetable.days, tasks), closures)));
 
   host.innerHTML = days.map((day, index) => `
-    <section class="day${day.date === today ? ' is-today' : ''}${day.closure ? ' is-closed' : ''}${day.peKit ? ' is-pe' : ''}" data-index="${index}" tabindex="0">
+    <section class="day${day.date === today ? ' is-today' : ''}${day.closure ? ' is-closed' : ''}${day.peKit ? ' is-pe' : ''}${day.swimKit ? ' is-swim' : ''}" data-index="${index}" tabindex="0">
       <div class="day-head">
         <span class="day-name">${esc(day.weekday)}</span>
         ${day.peKit ? '<span class="pe-badge" title="A PE, games or fixture lesson today">🎽 PE Kit Required</span>' : ''}
+        ${day.swimKit ? '<span class="swim-badge" title="A swimming lesson today">🏊 Swimming Kit Required</span>' : ''}
         <span class="day-date">${day.date === today ? '<span class="today-dot"></span>' : ''}${esc(fmtDate(day.date).replace(/^\w+ /, ''))}</span>
       </div>
       ${day.closure ? `<p class="day-closed">Closed<span>${esc(day.closure.label)}</span></p>` : ''}

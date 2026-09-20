@@ -226,6 +226,17 @@ export const needsPeKit = (day) => (day.lessons || []).some((l) => isPeSubject(l
 
 export const markPeKit = (days = []) => days.map((day) => ({ ...day, peKit: needsPeKit(day) }));
 
+/** Swimming gets its own kit call-out — a towel and trunks, not a PE kit. */
+const SWIM_SUBJECT = /\bswim(?:ming)?\b/;
+
+export function isSwimSubject(subject) {
+  return SWIM_SUBJECT.test(String(subject || '').toLowerCase().replace(/\./g, ''));
+}
+
+export const needsSwimKit = (day) => (day.lessons || []).some((l) => isSwimSubject(l.subject));
+
+export const markSwimKit = (days = []) => days.map((day) => ({ ...day, swimKit: needsSwimKit(day) }));
+
 /**
  * Marks the lessons a piece of homework is due in, matching on due date and
  * subject. Where a subject is taught twice in a day the first lesson takes it,

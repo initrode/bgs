@@ -5,7 +5,7 @@ import { mondayOf, weekdayOf } from '../src/dates.mjs';
 import {
   weekLabel, isNow, lessonWhere, mondayOf as clientMonday, focusDayIndex, dockWeight,
   dockOpacity, attachHomework, subjectKey, schoolWeekOf as clientSchoolWeek,
-  isPeSubject, markPeKit,
+  isPeSubject, markPeKit, isSwimSubject, markSwimKit,
 } from '../public/task-utils.js';
 import { schoolWeekOf } from '../src/dates.mjs';
 
@@ -476,5 +476,35 @@ test('a PE, games or fixture lesson calls for kit', async (t) => {
     const days = [{ date: '2026-09-21', weekday: 'Monday', lessons: [{ id: 1, subject: 'Games' }] }];
     markPeKit(days);
     assert.equal('peKit' in days[0], false);
+  });
+});
+
+test('swimming gets its own kit call-out, not a PE one', async (t) => {
+  await t.test('the subjects that mean a towel and trunks', () => {
+    for (const subject of ['Swimming', 'swimming', 'Swim', 'PD-Swimming']) {
+      assert.ok(isSwimSubject(subject), `expected "${subject}" to need swim kit`);
+    }
+  });
+
+  await t.test('PE does not also count as swimming, or vice versa', () => {
+    assert.ok(!isSwimSubject('PD-PE'));
+    assert.ok(!isSwimSubject('Games'));
+    assert.ok(!isPeSubject('PD-Swimming'));
+  });
+
+  await t.test('markSwimKit flags a day with a swimming lesson anywhere in it', () => {
+    const days = [
+      { date: '2026-09-21', weekday: 'Monday', lessons: [{ id: 1, subject: 'PD-Maths' }, { id: 2, subject: 'PD-Swimming' }] },
+      { date: '2026-09-22', weekday: 'Tuesday', lessons: [{ id: 3, subject: 'PD-PE' }] },
+    ];
+    const out = markSwimKit(days);
+    assert.equal(out[0].swimKit, true);
+    assert.equal(out[1].swimKit, false);
+  });
+
+  await t.test('the original days are not mutated', () => {
+    const days = [{ date: '2026-09-21', weekday: 'Monday', lessons: [{ id: 1, subject: 'Swimming' }] }];
+    markSwimKit(days);
+    assert.equal('swimKit' in days[0], false);
   });
 });
