@@ -214,6 +214,18 @@ export function subjectKey(subject) {
   return String(subject || '').toLowerCase().replace(/^(pd|ks\d|y\d+)[-\s]+/, '').trim();
 }
 
+/** PE, games and inter-school fixtures — anything that means kit, not books. */
+const PE_SUBJECT = /\b(pe|physical education|games|sports?|fixtures?)\b/;
+
+export function isPeSubject(subject) {
+  return PE_SUBJECT.test(String(subject || '').toLowerCase().replace(/\./g, ''));
+}
+
+/** A day needs kit if any lesson on it is PE, games or a sports fixture. */
+export const needsPeKit = (day) => (day.lessons || []).some((l) => isPeSubject(l.subject));
+
+export const markPeKit = (days = []) => days.map((day) => ({ ...day, peKit: needsPeKit(day) }));
+
 /**
  * Marks the lessons a piece of homework is due in, matching on due date and
  * subject. Where a subject is taught twice in a day the first lesson takes it,

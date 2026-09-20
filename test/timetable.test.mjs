@@ -5,6 +5,7 @@ import { mondayOf, weekdayOf } from '../src/dates.mjs';
 import {
   weekLabel, isNow, lessonWhere, mondayOf as clientMonday, focusDayIndex, dockWeight,
   dockOpacity, attachHomework, subjectKey, schoolWeekOf as clientSchoolWeek,
+  isPeSubject, markPeKit,
 } from '../public/task-utils.js';
 import { schoolWeekOf } from '../src/dates.mjs';
 
@@ -440,5 +441,40 @@ test('homework is cross-referenced onto the lessons it is due in', async (t) => 
     assert.equal(subjectKey('PD-English'), subjectKey('English'));
     assert.equal(subjectKey('KS2-Maths'), 'maths');
     assert.equal(subjectKey(null), '');
+  });
+});
+
+test('a PE, games or fixture lesson calls for kit', async (t) => {
+  await t.test('the subjects that mean kit', () => {
+    for (const subject of ['PE', 'pe', 'P.E.', 'Physical Education', 'Games', 'Sport', 'Sports', 'Sports Fixture', 'Fixture', 'Fixtures']) {
+      assert.ok(isPeSubject(subject), `expected "${subject}" to need kit`);
+    }
+  });
+
+  await t.test('subjects that only sound like it', () => {
+    for (const subject of ['Speech and Drama', 'PSHE', 'Expedition', 'Geography', null, undefined]) {
+      assert.ok(!isPeSubject(subject), `did not expect "${subject}" to need kit`);
+    }
+  });
+
+  await t.test('markPeKit flags a day with a PE lesson anywhere in it', () => {
+    const days = [
+      { date: '2026-09-21', weekday: 'Monday', lessons: [{ id: 1, subject: 'PD-Maths' }, { id: 2, subject: 'Games' }] },
+      { date: '2026-09-22', weekday: 'Tuesday', lessons: [{ id: 3, subject: 'PD-History' }] },
+    ];
+    const out = markPeKit(days);
+    assert.equal(out[0].peKit, true);
+    assert.equal(out[1].peKit, false);
+  });
+
+  await t.test('a day with no lessons at all is not flagged', () => {
+    const out = markPeKit([{ date: '2026-09-23', weekday: 'Wednesday', lessons: [] }]);
+    assert.equal(out[0].peKit, false);
+  });
+
+  await t.test('the original days are not mutated', () => {
+    const days = [{ date: '2026-09-21', weekday: 'Monday', lessons: [{ id: 1, subject: 'Games' }] }];
+    markPeKit(days);
+    assert.equal('peKit' in days[0], false);
   });
 });
