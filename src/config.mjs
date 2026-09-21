@@ -31,9 +31,20 @@ function parseEnvFile(file) {
   for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
     if (/^\s*#/.test(line)) continue;
     const m = line.match(/^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/);
-    if (m) out[m[1]] = m[2].replace(/^(["'])(.*)\1$/, '$2');
+    if (m) out[m[1]] = parseEnvValue(m[2]);
   }
   return out;
+}
+
+/**
+ * A quoted value ends at its closing quote, so a trailing `# comment` (as
+ * this project's own README examples use) is not part of the value. An
+ * unquoted value ends at the first whitespace-then-`#`.
+ */
+export function parseEnvValue(raw) {
+  const quoted = raw.match(/^(["'])(.*?)\1/);
+  if (quoted) return quoted[2];
+  return raw.replace(/\s+#.*$/, '').trim();
 }
 
 const fileEnv = ENV_FILES.reduce((acc, f) => Object.assign(acc, parseEnvFile(f)), {});
