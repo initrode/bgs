@@ -3,3 +3,8 @@ data/
 *.png
 .env
 .satchel.env
+
+# npm-shrinkwrap.json is the source of truth (see README); this is only
+# regenerated locally because `npm audit` on npm 12+ refuses to run without
+# a package-lock.json on disk, even with a shrinkwrap present.
+package-lock.json

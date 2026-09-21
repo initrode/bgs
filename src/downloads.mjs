@@ -3,6 +3,7 @@ import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { Readable } from 'node:stream';
 import { dataDir } from './config.mjs';
+import { loggedFetch } from './net.mjs';
 
 /**
  * Saving attachments to disk. Provider-agnostic: anything that can describe an
@@ -48,7 +49,7 @@ export function isDownloaded(source, taskId, attachment) {
  * file first, so an interrupted download never leaves a plausible-looking
  * truncated file behind.
  */
-export async function download(source, taskId, attachment, { fetcher = fetch, force = false } = {}) {
+export async function download(source, taskId, attachment, { fetcher = loggedFetch, force = false } = {}) {
   if (!attachment?.url) {
     throw Object.assign(new Error(`Attachment ${attachment?.id ?? '?'} has no url`), { status: 422 });
   }
@@ -92,7 +93,7 @@ export async function download(source, taskId, attachment, { fetcher = fetch, fo
 }
 
 /** Downloads every attachment on a task, reporting per-file rather than failing as one. */
-export async function downloadAll(task, { fetcher = fetch, force = false } = {}) {
+export async function downloadAll(task, { fetcher = loggedFetch, force = false } = {}) {
   const attachments = task.attachments || [];
   const files = [];
   for (const attachment of attachments) {

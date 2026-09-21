@@ -9,6 +9,7 @@ import { readToken, writeToken } from '../tokens.mjs';
 import { withSession, dismissCookieBanner } from '../browser.mjs';
 import { htmlToText, extractLinks } from '../html.mjs';
 import { env } from '../config.mjs';
+import { loggedFetch } from '../net.mjs';
 import { isoDate, shiftDays, mondayOf, weekdayOf, schoolWeekOf } from '../dates.mjs';
 
 const ID = 'satchelone';
@@ -31,7 +32,10 @@ async function loginForToken(ctx) {
   ctx.log('no valid token — signing in with a browser');
 
   return withSession(ID, async ({ page, saveSession }) => {
-    await page.goto(`${WEB}/v7/login`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    const loginUrl = `${WEB}/v7/login`;
+    ctx.log(`→ GET ${loginUrl}`);
+    const navigation = await page.goto(loginUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    ctx.log(`← ${navigation?.status() ?? '?'} GET ${loginUrl}`);
     await page.waitForTimeout(2000);
     await dismissCookieBanner(page);
 
@@ -93,12 +97,12 @@ async function getToken(ctx) {
 /** One API call, retrying once through a fresh login if the token was rejected. */
 async function api(ctx, path, { retry = true } = {}) {
   let auth = await getToken(ctx);
-  let res = await fetch(`${API}${path}`, { headers: apiHeaders(auth.token) });
+  let res = await loggedFetch(`${API}${path}`, { headers: apiHeaders(auth.token) });
 
   if ((res.status === 401 || res.status === 403) && retry) {
     ctx.log('token rejected — re-authenticating');
     auth = await loginForToken(ctx);
-    res = await fetch(`${API}${path}`, { headers: apiHeaders(auth.token) });
+    res = await loggedFetch(`${API}${path}`, { headers: apiHeaders(auth.token) });
   }
   if (!res.ok) {
     const body = await res.text().catch(() => '');

@@ -10,6 +10,7 @@
  */
 import { readToken, writeToken } from '../tokens.mjs';
 import { mondayOf, todayISO, weekdayOf, localISO } from '../dates.mjs';
+import { loggedFetch } from '../net.mjs';
 
 const ID = 'ttrockstars';
 const PLAY = 'https://play.ttrockstars.com';
@@ -121,6 +122,9 @@ function summarise(days) {
 async function login(ctx) {
   const school = ctx.env.TTRS_SCHOOL;
   const pin = String(ctx.env.TTRS_PASS);
+  // Digits are masked — only the shape of the value matters here (stray
+  // quotes or a trailing comment leaking in from a badly-parsed .env line).
+  ctx.log?.(`TTRS_PASS parsed as ${JSON.stringify(pin.replace(/\d/g, '#'))} (${pin.length} chars) for school ${JSON.stringify(school)}, user ${JSON.stringify(ctx.env.TTRS_USER)}`);
   if (!/^\d{4}$/.test(pin)) {
     throw Object.assign(new Error('TTRS_PASS must be the four-digit PIN'), { status: 503 });
   }
@@ -130,7 +134,10 @@ async function login(ctx) {
       Object.defineProperty(navigator, 'webdriver', { get: () => false });
     });
 
-    await page.goto(`${PLAY}/login/${school}`, { waitUntil: 'domcontentloaded' });
+    const loginUrl = `${PLAY}/login/${school}`;
+    ctx.log?.(`→ GET ${loginUrl}`);
+    const navigation = await page.goto(loginUrl, { waitUntil: 'domcontentloaded' });
+    ctx.log?.(`← ${navigation?.status() ?? '?'} GET ${loginUrl}`);
 
     // A saved browser session may still be signed in, in which case the app
     // goes straight to the game and there is no form to fill. Wait for
@@ -142,6 +149,7 @@ async function login(ctx) {
       page.waitForSelector('input[data-qa="username-input"]', { timeout: 45000 }).then(() => 'form', never),
       page.waitForURL((url) => /^\/school\/student\//.test(url.pathname), { timeout: 45000 }).then(() => 'home', never),
     ]);
+    ctx.log?.(`landed on: ${landed} (current url: ${page.url()})`);
 
     if (landed === 'form') {
       await page.fill('input[data-qa="username-input"]', ctx.env.TTRS_USER);
@@ -151,13 +159,16 @@ async function login(ctx) {
         await page.click(`.key-pin[aria-label="${digit}"]`);
         await page.waitForTimeout(120);
       }
+      ctx.log?.(`entered ${pin.length}-digit PIN, submitting`);
       await page.click('.key-pin[aria-label="Enter"]');
       await page
         .waitForURL((url) => /^\/school\/student\//.test(url.pathname), { timeout: 45000 })
         .catch(() => {});
+      ctx.log?.(`after PIN submit, url is: ${page.url()}`);
     }
 
     const jwt = (await context.cookies()).find((c) => c.name === 'jwt')?.value;
+    ctx.log?.(`jwt cookie ${jwt ? 'present' : 'missing'} after login attempt`);
     if (!jwt) {
       throw Object.assign(new Error('Signed in but Times Table Rock Stars issued no token — check the username and PIN'), { status: 502 });
     }
@@ -167,7 +178,7 @@ async function login(ctx) {
 }
 
 /** Swaps a still-valid token for a fresh hour, and picks up the user summary. */
-async function refresh(token, fetcher = fetch) {
+async function refresh(token, fetcher = loggedFetch) {
   const res = await fetcher(`${NEST}/auth3/token/refresh?includeSummary=true`, { headers: apiHeaders(token) });
   if (!res.ok) throw Object.assign(new Error(`Could not refresh the Rock Stars session (HTTP ${res.status})`), { status: 502 });
   return res.json();
@@ -186,7 +197,7 @@ const studentOf = (user = {}) => ({
  * time left, a refresh of it if it is about to run out, a browser login only
  * when there is nothing left to refresh.
  */
-async function session(ctx, { fetcher = fetch } = {}) {
+async function session(ctx, { fetcher = loggedFetch } = {}) {
   const valid = readToken(ID, { skewSeconds: 300 });
   if (valid?.token) return valid;
 
@@ -225,7 +236,7 @@ const epoch = (iso, endOfDay = false) =>
  * and the rows filtered by their own date, so no timezone arithmetic is
  * needed to ask for "this week" and get exactly this week back.
  */
-async function history(token, userId, from, to, { fetcher = fetch, timeZone } = {}) {
+async function history(token, userId, from, to, { fetcher = loggedFetch, timeZone } = {}) {
   const url = `${NEST}/userstats/daystat/history/${userId}?startTs=${epoch(from) - 86400}&endTs=${epoch(to, true) + 86400}`;
   const res = await fetcher(url, { headers: apiHeaders(token) });
   if (!res.ok) throw Object.assign(new Error(`Times Table Rock Stars refused the stats request (HTTP ${res.status})`), { status: 502 });
@@ -243,7 +254,7 @@ async function history(token, userId, from, to, { fetcher = fetch, timeZone } = 
  */
 const practiceWeek = (week) => (week ? mondayOf(week) : mondayOf(todayISO()));
 
-async function weekStats(ctx, { fetcher = fetch } = {}) {
+async function weekStats(ctx, { fetcher = loggedFetch } = {}) {
   const timeZone = ctx.env.TTRS_TIMEZONE || 'Europe/London';
   const target = Number(ctx.env.TTRS_WEEKLY_MINUTES || DEFAULT_TARGET);
   const { token, userId, student } = await session(ctx, { fetcher });
